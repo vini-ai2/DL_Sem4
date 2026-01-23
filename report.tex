@@ -1,0 +1,278 @@
+% --- Dark code blocks (Pandoc Shaded) ---
+\usepackage{xcolor}
+\usepackage{fancyvrb}
+\usepackage{framed}
+
+% Black background
+\definecolor{shadecolor}{RGB}{0,0,0}
+
+% White/light text for visibility
+\definecolor{codewhite}{RGB}{245,245,245}
+
+% Apply text color inside Highlighting
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{
+  commandchars=\\\{\},
+  formatcom=\color{codewhite},
+  fontsize=\small
+}
+
+\section{Assignment 1 - DL}\label{assignment-1---dl}
+
+\subsection{Dataset used:
+https://www.kaggle.com/datasets/isaikumar/creditcardfraud}\label{dataset-used-httpswww.kaggle.comdatasetsisaikumarcreditcardfraud}
+
+This dataset is a credit card fraud detection dataset containing 492
+frauds out of 284, 807 transactions that happened in the duration of 2
+days. There have been feature reduction techniques like PCA applied on
+this dataset. hence the features have been brought down to V1..V8.
+
+\begin{itemize}
+\item
+  This dataset is highly unbalanced, the target class is positive only
+  0.172\% of all the transactions
+\item
+  Note:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Confusion Matrix is not a meaningful measurement of accuracy in the
+    case of an unbalanced dataset. ROC-AUC curves are better for such
+    cases.
+  \item Imbalance is too high since it is a realistic scenario.
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{1: Preprocessing the data}\label{preprocessing-the-data}
+
+\begin{enumerate}
+\def\labelenumi{\roman{enumi}.}
+\item
+  check for any null or missing values -\textgreater{} no irregularities
+  found
+\item
+  Normalization To ensure there is no bias in the dataset, the
+  normalization is done after the train/test split.
+\end{enumerate}
+
+\subsubsection{2: Implementing a perceptron from
+scratch}\label{implementing-a-perceptron-from-scratch}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  y = sigma(x\_i*w\_i)+b
+\item
+  update b
+\item
+  predict
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{Perceptron Test Metrics:}
+\NormalTok{Accuracy: }\FloatTok{0.9992}
+\NormalTok{Precision: }\FloatTok{0.7358}
+\NormalTok{Recall: }\FloatTok{0.7959}
+\NormalTok{F1}\OperatorTok{{-}}\NormalTok{score: }\FloatTok{0.7647}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{3. Implementing an mlp from
+scratch}\label{implementing-an-mlp-from-scratch}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  create and initialize the concatenate \textbf{bias is trained, not
+  fixed. so the computation of the bias is done while iterations are
+  going on}
+\item
+  start off with random weights, later train them to achieve optimal
+  accuracy
+\item
+  activation function used in this: Sigmoid
+\item
+  Loss function: Binary Cross Entropy
+\item
+  Forward pass:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    z1 = sigma(x, w1)
+  \item
+    a1=activ\_fn(z1)
+  \item
+    y\_pred = activ\_fn(z2)
+  \end{itemize}
+\item
+  Backward pass:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    loss=y\_pred-y -loss=y\_pred-y
+  \item
+    error propagated to hidden layer
+  \item
+    local grad of i/p
+  \end{itemize}
+\item
+  mlp metrics are defined: epochs = \#, learning rate = \#, batch size =
+  \#
+\item
+  Training the MLP:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    shuffling
+  \item
+    gradient descent applied
+  \item
+    loss is calculated
+  \end{itemize}
+\item
+  Results:
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{MLP Test Metrics:}
+\NormalTok{Accuracy: }\FloatTok{0.9991}
+\NormalTok{Precision: }\FloatTok{0.6949}
+\NormalTok{Recall: }\FloatTok{0.8367}
+\NormalTok{F1}\OperatorTok{{-}}\NormalTok{score: }\FloatTok{0.7593}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{4. Imbalance in the
+dataset}\label{imbalance-in-the-dataset}
+
+There is a huge {[}99.8:0.2{]} percent imbalance to the non-fraud to
+fraud target. To preserve it, the preferred technique was to combine
+stratify and class weights.
+
+\subsubsection{When the decision threshold is changed while using simple
+stratify}\label{when-the-decision-threshold-is-changed-while-using-simple-stratify}
+
+A significant change is seen as the threshold changes even in (1/10)th.
+Initially in the simple stratify MLP, when the threshold is taken as
+0.5, the precision and recall achieved were 0.00
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ControlFlowTok{return}\NormalTok{ (y\_hat }\OperatorTok{\textgreater{}=} \FloatTok{0.5}\NormalTok{).astype(}\BuiltInTok{int}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+But, when this threshold was decreased to 0.1, the achieved results were
+80\% higher than before.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ControlFlowTok{return}\NormalTok{ (y\_hat }\OperatorTok{\textgreater{}=} \FloatTok{0.1}\NormalTok{).astype(}\BuiltInTok{int}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+This indicated that this method clearly was not effective in handling
+this imbalance.
+
+\subsubsection{Why class weights?}\label{why-class-weights}
+
+This method in specific, gives appropriate weights taking into account
+the minority and majority classes. To solve the imbalance in this
+problem, we initially assume some random weights. at the end, the
+weights sum up to appropximately:
+\texttt{python\ \ weight{[}0{]}\ ≈\ 0.5008661206149896,\ \ \ weight{[}1{]}\ ≈\ 289.14340101522845}
+
+\subsubsection{5. Result comparison}\label{result-comparison}
+
+\subsubsection{a. Perceptron vs MLP
+performance}\label{a.-perceptron-vs-mlp-performance}
+
+\pandocbounded{\includegraphics[width=0.7\textwidth,alt={Performance comparison of the perceptron and the MLP}]{percep_vs_mlp.png}}
+Obseervations: 1. Accuracy(the proportion of total predictions that are
+correct) of both the preceptron and the MLP are extremely high
+(\textasciitilde99.999\%) since the dataset is highly imbalanced
+consisting of true negatives.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\item
+  Precision(how many of the predicted +ve samples are truly poitive) The
+  model predicts the fraud for 70\% of the cases.
+\item
+  Recall(How many true +ve samples are correctly identified): MLP
+  detects a higher proportion of true fraud cases, better than a
+  perceptron.
+\item
+  F1-score(harmonic mean of precision and recall): MLP captures more
+  complex patterns
+\end{enumerate}
+
+\subsubsection{b. (i) MLP performance: loss
+curve}\label{b.-i-mlp-performance-loss-curve}
+
+\begin{figure}
+\centering
+\pandocbounded{\includegraphics[width=0.7\textwidth,alt={Loss convergence of MLP}]{mlp_loss_curve.png}}
+\caption{Loss convergence of MLP}
+\end{figure}
+
+What we observe? 1. Both the training and validation losses decrease
+with increase in the no. of epochs 2. No divergence is seen, and both
+the curves are very close to each other. - LR = 0.01 is appropriate - GD
+is working fine - No overfitting is seen
+
+\begin{enumerate}
+\def\labelenumi{(\roman{enumi})}
+\setcounter{enumi}{1}
+\item
+  \begin{figure}
+  \centering
+  \pandocbounded{\includegraphics[width=0.7\textwidth,alt={Loss convergence of MLP}]{mlp_wt_loss.png}}
+  \caption{Loss convergence of MLP}
+  \end{figure}
+\end{enumerate}
+
+\subsubsection{c.~MLP stratify vs MLP stratify+class
+weights}\label{c.-mlp-stratify-vs-mlp-stratifyclass-weights}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{MLP: Stratified}
+\NormalTok{Accuracy : }\FloatTok{0.9982795547909132}
+\NormalTok{Precision: }\FloatTok{0.0}
+\NormalTok{Recall   : }\FloatTok{0.0}
+\NormalTok{F1}\OperatorTok{{-}}\NormalTok{score : }\FloatTok{0.0}
+
+\NormalTok{MLP Stratified }\OperatorTok{+}\NormalTok{ Class Weight}
+\NormalTok{Accuracy : }\FloatTok{0.9790211017871564}
+\NormalTok{Precision: }\FloatTok{0.07047768206734534}
+\NormalTok{Recall   : }\FloatTok{0.9183673469387755}
+\NormalTok{F1}\OperatorTok{{-}}\NormalTok{score : }\FloatTok{0.13090909090909092}
+\end{Highlighting}
+\end{Shaded}
+
+This clearly indicates that the method of combining stratify and class
+weights worked extremely well.
+
+In the normal stratify imbalance, we tried to implement a Binary cross
+entropy. This was not sufficient since it was biased entirely toward
+class 0.
+
+But by adding appropriate weights, though we see a very low precision,
+it seems it is a trade-off with recall, while the accuracy is pretty
+good and looks like the case of overfitting is resolved {[}99.999\% in
+the case of normal MLP{]}
+
+\begin{figure}
+\centering
+\pandocbounded{\includegraphics[width=0.7\textwidth,alt={Differentiation of methods used for handling the imbalance}]{strat_vs_class.png}}
+\caption{Differentiation of methods used for handling the imbalance}
+\end{figure}
