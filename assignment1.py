@@ -350,3 +350,86 @@ plt.savefig("performance_comparison.png")
     
 
 
+import numpy as np
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
+# Load dataset
+data = load_iris()
+X = data.data
+y = data.target.reshape(-1, 1)
+
+# One-hot encoding for multi-class classification
+encoder = OneHotEncoder(sparse_output=False)
+y = encoder.fit_transform(y)
+
+# Standardize features
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Define neural network structure
+input_size = X.shape[1]
+hidden_size = 10
+output_size = y.shape[1]
+learning_rate = 0.01
+epochs = 1000
+
+# Initialize weights and biases
+np.random.seed(42)
+W1 = np.random.randn(input_size, hidden_size)
+B1 = np.zeros((1, hidden_size))
+W2 = np.random.randn(hidden_size, output_size)
+B2 = np.zeros((1, output_size))
+
+# Activation functions and derivatives
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+def sigmoid_derivative(x):
+    return x * (1 - x)
+
+# Training using backpropagation
+for epoch in range(epochs):
+    # Forward propagation
+    Z1 = np.dot(X_train, W1) + B1
+    A1 = sigmoid(Z1)
+    Z2 = np.dot(A1, W2) + B2
+    A2 = sigmoid(Z2)
+
+    # Compute loss (Mean Squared Error)
+    loss = np.mean((y_train - A2) ** 2)
+
+    # Backpropagation
+    error_output = y_train - A2
+    dZ2 = error_output * sigmoid_derivative(A2)
+    dW2 = np.dot(A1.T, dZ2)
+    dB2 = np.sum(dZ2, axis=0, keepdims=True)
+
+    error_hidden = np.dot(dZ2, W2.T)
+    dZ1 = error_hidden * sigmoid_derivative(A1)
+    dW1 = np.dot(X_train.T, dZ1)
+    dB1 = np.sum(dZ1, axis=0, keepdims=True)
+
+    # Update weights and biases
+    W2 += learning_rate * dW2
+    B2 += learning_rate * dB2
+    W1 += learning_rate * dW1
+    B1 += learning_rate * dB1
+
+    if epoch % 100 == 0:
+        print(f"Epoch {epoch}, Loss: {loss:.4f}")
+
+# Testing
+Z1_test = np.dot(X_test, W1) + B1
+A1_test = sigmoid(Z1_test)
+Z2_test = np.dot(A1_test, W2) + B2
+A2_test = sigmoid(Z2_test)
+
+# Predictions and accuracy
+predictions = np.argmax(A2_test, axis=1)
+y_true = np.argmax(y_test, axis=1)
+accuracy = np.mean(predictions == y_true)
+print(f"Test Accuracy: {accuracy * 100:.2f}%")
